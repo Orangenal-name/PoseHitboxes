@@ -1,13 +1,15 @@
 ﻿using MelonLoader;
-using RUMBLE.Tutorial.MoveLearning;
+using Il2CppRUMBLE.Tutorial.MoveLearning;
 using RumbleModdingAPI;
-using static RumbleModdingAPI.Calls;
+//using static RumbleModdingAPI.Calls;
 using UnityEngine;
-using static RUMBLE.Players.Subsystems.PlayerVR;
-using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning.MoveLearnSelector;
-using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning;
-using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts;
-using MelonLoader.TinyJSON;
+//using RUMBLE.Tutorial.MoveLearning;
+//using static RUMBLE.Players.Subsystems.PlayerVR;
+//using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning.MoveLearnSelector;
+//using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning;
+//using static RumbleModdingAPI.Calls.GameObjects.Gym.Logic.HeinhouserProducts;
+//using MelonLoader.TinyJSON;
+//using static RumbleModdingAPI.Calls.GameObjects.Park.Scene.Park.SubStaticGroup.Station.Gondola.Step;
 
 
 namespace PoseHitboxes
@@ -23,15 +25,61 @@ namespace PoseHitboxes
         Material glassy;
         string currentPoseName = "";
         int delayCycle = 0;
+        //GameObject LCube;
+        //GameObject RCube;
+        GameObject LHitbox;
+        GameObject RHitbox;
         GameObject LRotate;
         GameObject RRotate;
         GameObject LRotateLimit;
         GameObject RRotateLimit;
         GameObject LHandRef;
         GameObject RHandRef;
+        ////GameObject HBRef;
+        ////GameObject HBRefHead;
         float deg2rad = 3.14159f / 180f;
         float LThresh = 0f;
         float RThresh = 0f;
+        Color red8 = new Color(1.0f, 0.0f, 0.0f, 0.8f);
+        Color green8 = new Color(0.0f, 1.0f, 0.0f, 0.8f);
+        Color blue8 = new Color(0.0f, 0.0f, 1.0f, 0.8f);
+        Color black8 = new Color(0.0f, 0.0f, 0.0f, 0.8f);
+        Color red1 = new Color(1.0f, 0.0f, 0.0f, 0.1f);
+        Color green1 = new Color(0.0f, 1.0f, 0.0f, 0.1f);
+        Color blue1 = new Color(0.0f, 0.0f, 1.0f, 0.1f);
+
+        //creates a child set of WFParent with a given material and color in the shape of a 1x1x1 wireframe cube made of primative cubes. 
+        private void BuildWireframeBox(GameObject WFParent, Material WFMat, Color WFColor)
+        {
+            GameObject[,] spokes = new GameObject[3, 4];
+            int[,] dArray = { { 1, 1 }, { 1, -1 }, { -1, 1 }, { -1, -1 } };
+            for (int xyz = 0; xyz < 3; xyz++)
+            {
+                for (int edges = 0; edges < 4; edges++)
+                {
+                    spokes[xyz, edges] = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    spokes[xyz, edges].transform.parent = WFParent.transform;
+                    spokes[xyz, edges].GetComponent<Renderer>().material = WFMat;
+                    spokes[xyz, edges].GetComponent<Renderer>().material.color = WFColor;
+                    switch (xyz)
+                    {
+                        case 0:
+                            spokes[xyz, edges].transform.localScale = new Vector3(1f, 0.003f, 0.003f);
+                            spokes[xyz, edges].transform.localPosition = new Vector3(0f, 0.5f * dArray[edges, 0], 0.5f * dArray[edges, 1]);
+                            break;
+                        case 1:
+                            spokes[xyz, edges].transform.localScale = new Vector3(0.003f, 1f, 0.003f);
+                            spokes[xyz, edges].transform.localPosition = new Vector3(0.5f * dArray[edges, 0], 0f, 0.5f * dArray[edges, 1]);
+                            break;
+                        case 2:
+                            spokes[xyz, edges].transform.localScale = new Vector3(0.003f, 0.003f, 1f);
+                            spokes[xyz, edges].transform.localPosition = new Vector3(0.5f * dArray[edges, 0], 0.5f * dArray[edges, 1], 0f);
+                            break;
+                    }
+                }
+            }
+        }
+
 
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
@@ -63,7 +111,8 @@ namespace PoseHitboxes
                             poseGhost = Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning.GetGameObject().GetComponentInChildren<PoseGhost>();//GameObject.Find("--------------LOGIC--------------/Heinhouser products/MoveLearning/Ghost").GetComponent<PoseGhost>();
                             ghosty = poseGhost.transform.GetChild(0).GetChild(1).GetComponent<Renderer>().material;
                             redy = Calls.GameObjects.Gym.Scene.GymProduction.MainStaticGroup.GymArena.GetGameObject().transform.GetChild(0).GetComponent<Renderer>().material;
-                            //glassy = Calls.GameObjects.Gym.Logic.HeinhouserProducts.MoveLearning.MoveLearnSelector.TotemPedistalCompact.GetGameObject().transform.GetChild(0).GetComponent<Renderer>().material;
+                            ////HBRef = GameObject.Find("Player Controller(Clone)/Visuals/RIG");///Bone_Shoulderblade_L/Bone_Shoulder_L/Bone_Lowerarm_L/Bone_Hand_L");
+                            ////HBRefHead = GameObject.Find("Player Controller(Clone)/Visuals/RIG/Bone_Pelvis/Bone_Spine/Bone_Chest/Bone_Neck/Bone_Head");
                             LHandRef = GameObject.Find("Player Controller(Clone)/Visuals/RIG/Bone_Pelvis/Bone_Spine/Bone_Chest/Bone_Shoulderblade_L/Bone_Shoulder_L/Bone_Lowerarm_L/Bone_Hand_L");
                             RHandRef = GameObject.Find("Player Controller(Clone)/Visuals/RIG/Bone_Pelvis/Bone_Spine/Bone_Chest/Bone_Shoulderblade_R/Bone_Shoulder_R/Bone_Lowerarm_R/Bone_Hand_R");
                             //--------------LOGIC-------------- / Heinhouser products / MoveLearning / MoveLearnSelector / TotemPedistalCompact /
@@ -97,7 +146,10 @@ namespace PoseHitboxes
                             GameObject.DestroyImmediate(RRotate.gameObject);
                         }
                     }
-                   // MelonLogger.Msg("Creating Primitives");
+                    // MelonLogger.Msg("Creating Primitives");
+
+                    //LCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    //RCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject LCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject RCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     LCube.transform.parent = poseGhost.transform.GetChild(0).GetChild(0);
@@ -106,10 +158,17 @@ namespace PoseHitboxes
                     RCube.transform.position = poseGhost.rightHand.position;
 
 
-                    //MelonLogger.Msg(poseGhost.leftHand.rotation.x);
-                    //MelonLogger.Msg(poseGhost.showCurrentPoseData.leftControllerCondition.DesiredPose.rotation.x);
-                    LCube.GetComponent<Renderer>().material = ghosty;
-                    RCube.GetComponent<Renderer>().material = ghosty;
+                    BuildWireframeBox(LCube.gameObject, redy, black8);
+                    BuildWireframeBox(RCube.gameObject, redy, black8);
+                    ////LCube.transform.parent = HBRef.transform; // poseGhost.transform.GetChild(0).GetChild(0);
+                    ////RCube.transform.parent = HBRef.transform; //poseGhost.transform.GetChild(0).GetChild(1);
+                    ////LCube.transform.localPosition = poseGhost.leftHand.localPosition + new Vector3(0.5f, 0.5f, 0f);
+                    ////RCube.transform.localPosition = poseGhost.rightHand.localPosition + new Vector3(0.5f, 0.5f, 0f);
+                    ////LCube.transform.RotateAround(HBRef.transform.position, Vector3.forward, 180f); //flip it over, not sure why it is upside down
+                    ////RCube.transform.RotateAround(HBRef.transform.position, Vector3.forward, 180f); //flip it over, not sure why it is upside down
+
+                    LCube.GetComponent<Renderer>().enabled = false;
+                    RCube.GetComponent<Renderer>().enabled = false;
                     poseGhost.transform.GetChild(0).GetChild(0).GetComponent<Renderer>().material = redy;
                     poseGhost.transform.GetChild(0).GetChild(1).GetComponent<Renderer>().material = redy;
                     currentPoseName = poseGhost.showCurrentPoseData.name;
@@ -118,10 +177,8 @@ namespace PoseHitboxes
                     //setup gyro objects and details
                     LRotate = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     RRotate = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    //GameObject LXBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject LYBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject LZBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    //GameObject RXBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject RYBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject RZBar = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
@@ -133,50 +190,25 @@ namespace PoseHitboxes
                     LRotate.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
                     RRotate.transform.localScale = new Vector3(0.003f, 0.003f, 0.003f);
 
-                    //LXBar.transform.parent = LRotate.transform;
                     LYBar.transform.parent = LRotate.transform;
                     LZBar.transform.parent = LRotate.transform;
-                    //RXBar.transform.parent = RRotate.transform;
                     RYBar.transform.parent = RRotate.transform;
                     RZBar.transform.parent = RRotate.transform;
 
-                    //LXBar.transform.localScale = new Vector3(40f, 1f, 1f);
                     LYBar.transform.localScale = new Vector3(1f, 25f, 1f);
                     LZBar.transform.localScale = new Vector3(1f, 1f, 25f);
-                    //RXBar.transform.localScale = new Vector3(40f, 1f, 1f);
                     RYBar.transform.localScale = new Vector3(1f, 25f, 1f);
                     RZBar.transform.localScale = new Vector3(1f, 1f, 25f);
 
-                    //LXBar.GetComponent<Renderer>().material = ghosty;
-                    //LYBar.GetComponent<Renderer>().material = ghosty;
-                    //LZBar.GetComponent<Renderer>().material = ghosty;
-                    //RXBar.GetComponent<Renderer>().material = ghosty;
-                    //RYBar.GetComponent<Renderer>().material = ghosty;
-                    //RZBar.GetComponent<Renderer>().material = ghosty;
-
-                    Color red8 = new Color(1.0f, 0.0f, 0.0f, 0.8f);
-                    Color green8 = new Color(0.0f, 1.0f, 0.0f, 0.8f);
-                    Color blue8 = new Color(0.0f, 0.0f, 1.0f, 0.8f);
-
-
-                    //LXBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     LYBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     LZBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
-                    //RXBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     RYBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     RZBar.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
 
-                    //LXBar.GetComponent<Renderer>().material.color = red8;
                     LYBar.GetComponent<Renderer>().material.color = green8;
                     LZBar.GetComponent<Renderer>().material.color = blue8;
-                    //RXBar.GetComponent<Renderer>().material.color = red8;
                     RYBar.GetComponent<Renderer>().material.color = green8;
                     RZBar.GetComponent<Renderer>().material.color = blue8;
-
-                    //RRotate.transform.localScale = new Vector3(0.01f, 0.01f, 0.4f);
-                    //RRotate.GetComponent<Renderer>().material = redy;
-                    //RRotate.GetComponent<Renderer>().material.color = new Color(0.0f, 1.0f, 0.0f, 0.8f);
-
 
                     LRotate.transform.position = poseGhost.leftHand.position + new Vector3(-1.0f, 0.00f, -1.0f);
                     RRotate.transform.position = poseGhost.rightHand.position + new Vector3(-1.0f, 0.00f, -1.0f);
@@ -185,15 +217,13 @@ namespace PoseHitboxes
 
                     LRotateLimit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                     RRotateLimit = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    //GameObject LXBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                     GameObject LYBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                     GameObject LZBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                    //GameObject RXBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     GameObject RYBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                     GameObject RZBarLimit = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
 
                     //calculate trig for degree limits
- 
+
 
                     if (poseGhost.leftHand.rotation.eulerAngles.x == poseGhost.showCurrentPoseData.leftControllerCondition.DesiredPose.rotation.eulerAngles.x) // if the hands are not mirrored, use the normal map
                     {
@@ -201,8 +231,8 @@ namespace PoseHitboxes
                         RThresh = poseGhost.showCurrentPoseData.RightControllerCondition.RotationTreshold;
                         LCube.transform.localScale = new Vector3(poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold);
                         RCube.transform.localScale = new Vector3(poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold);
-                        
-                       // MelonLogger.Msg("right hand mode");
+
+                        // MelonLogger.Msg("right hand mode");
                     }
                     else // they need to be swapped
                     {
@@ -210,20 +240,12 @@ namespace PoseHitboxes
                         LThresh = poseGhost.showCurrentPoseData.RightControllerCondition.RotationTreshold;
                         RCube.transform.localScale = new Vector3(poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.leftControllerCondition.PositionTreshold);
                         LCube.transform.localScale = new Vector3(poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold, poseGhost.showCurrentPoseData.RightControllerCondition.PositionTreshold);
-                        
+
                         //MelonLogger.Msg("left hand mode");
                     }
 
-                    // tan(theta)/A = X // X is the radiaus we need, A is the length of the cylinder from the orgin, theta is angle tolerance
-                    //default cylinder diamter is 1, so the radius is 0.5, default height from origin is 1
-                    // we are not give theta in degrees, is is a percent like 0.8f, so (1 - 0.8) * 360 = 72 degrees
-                    // if 72 degrees is the total range, then 36 degrees is our theta, we can shorten the math by going to (1-0.8)*180 to get our tolernace in degrees
-                    // Tangent of this will give us a tolerance R in a scale of 1 we can apply to the cylinder
-                    //float LRotationLimit = Mathf.Tan((1 - poseGhost.showCurrentPoseData.LeftControllerCondition.RotationTreshold) * 180 * deg2rad); // 72 degrees
-                    //float RRotationLimit = Mathf.Tan((1 - poseGhost.showCurrentPoseData.RightControllerCondition.RotationTreshold) * 180 * deg2rad); // 126
-
-                    float LRotationLimit = ((1 - LThresh) * 3.14159f); // 72 degrees
-                    float RRotationLimit = ((1 - RThresh) * 3.14159f); // 126
+                    float LRotationLimit = ((1 - LThresh) * 3.14159f);
+                    float RRotationLimit = ((1 - RThresh) * 3.14159f);
 
                     LRotateLimit.transform.parent = poseGhost.transform.GetChild(0).GetChild(0);
                     RRotateLimit.transform.parent = poseGhost.transform.GetChild(0).GetChild(1);
@@ -233,57 +255,30 @@ namespace PoseHitboxes
                     LRotateLimit.transform.localScale = new Vector3(0.03f * LThresh, 0.03f * LThresh, 0.03f * LThresh);
                     RRotateLimit.transform.localScale = new Vector3(0.03f * RThresh, 0.03f * RThresh, 0.03f * RThresh);
 
-                    //LXBarLimit.transform.parent = LRotateLimit.transform;
                     LYBarLimit.transform.parent = LRotateLimit.transform;
                     LZBarLimit.transform.parent = LRotateLimit.transform;
-                    //RXBarLimit.transform.parent = RRotateLimit.transform;
                     RYBarLimit.transform.parent = RRotateLimit.transform;
                     RZBarLimit.transform.parent = RRotateLimit.transform;
-                    //MelonLogger.Msg("LRotationLimit");
-                    //MelonLogger.Msg(LRotationLimit);
-                    //MelonLogger.Msg("RRotationLimit");
-                    //MelonLogger.Msg(RRotationLimit);
-                    //LXBarLimit.transform.localScale = new Vector3(LRotationLimit, 0.5f, LRotationLimit);
+
                     LYBarLimit.transform.localScale = new Vector3(LRotationLimit, 0.5f, LRotationLimit);
                     LZBarLimit.transform.localScale = new Vector3(LRotationLimit, 0.5f, LRotationLimit);
-                    //RXBarLimit.transform.localScale = new Vector3(RRotationLimit, 0.5f, RRotationLimit);
                     RYBarLimit.transform.localScale = new Vector3(RRotationLimit, 0.5f, RRotationLimit);
                     RZBarLimit.transform.localScale = new Vector3(RRotationLimit, 0.5f, RRotationLimit);
-                    //LXBarLimit.transform.Rotate(new Vector3(0f, 0f, 90f), Space.Self);
+
                     LYBarLimit.transform.Rotate(new Vector3(0f, 90f, 0f), Space.Self);
                     LZBarLimit.transform.Rotate(new Vector3(90f, 0f, 0f), Space.Self);
-                    //RXBarLimit.transform.Rotate(new Vector3(0f, 0f, 90f), Space.Self);
                     RYBarLimit.transform.Rotate(new Vector3(0f, 90f, 0f), Space.Self);
                     RZBarLimit.transform.Rotate(new Vector3(90f, 0f, 0f), Space.Self);
 
-                    //LXBarLimit.GetComponent<Renderer>().material = ghosty;
-                    //LYBarLimit.GetComponent<Renderer>().material = ghosty;
-                    //LZBarLimit.GetComponent<Renderer>().material = ghosty;
-                    //RXBarLimit.GetComponent<Renderer>().material = ghosty;
-                    //RYBarLimit.GetComponent<Renderer>().material = ghosty;
-                    //RZBarLimit.GetComponent<Renderer>().material = ghosty;
-
-                    //LXBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     LYBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     LZBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
-                    //RXBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     RYBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
                     RZBarLimit.GetComponent<Renderer>().material.shader = Shader.Find("Universal Render Pipeline/Lit");
 
-                    Color red1 = new Color(1.0f, 0.0f, 0.0f, 0.1f);
-                    Color green1 = new Color(0.0f, 1.0f, 0.0f, 0.1f);
-                    Color blue1 = new Color(0.0f, 0.0f, 1.0f, 0.1f);
-
-                    //LXBarLimit.GetComponent<Renderer>().material.color = red1;
                     LYBarLimit.GetComponent<Renderer>().material.color = green1;
                     LZBarLimit.GetComponent<Renderer>().material.color = blue1;
-                    //RXBarLimit.GetComponent<Renderer>().material.color = red1;
                     RYBarLimit.GetComponent<Renderer>().material.color = green1;
                     RZBarLimit.GetComponent<Renderer>().material.color = blue1;
-
-                    //RRotate.transform.localScale = new Vector3(0.01f, 0.01f, 0.4f);
-                    //RRotate.GetComponent<Renderer>().material = redy;
-                    //RRotate.GetComponent<Renderer>().material.color = new Color(0.0f, 1.0f, 0.0f, 0.8f);
 
                     LRotateLimit.transform.position = poseGhost.leftHand.position + new Vector3(-0.3f, 0.15f, -0.3f);
                     RRotateLimit.transform.position = poseGhost.rightHand.position + new Vector3(-0.3f, 0.15f, -0.3f);
@@ -303,10 +298,12 @@ namespace PoseHitboxes
                     RRotateLimit.transform.rotation = RCube.transform.rotation;
                 }
             }
-            if(LRotate != null)
-             {
+            if (LRotate != null)//// && LCube != null)
+            {
                 LRotate.transform.rotation = LHandRef.GetComponent<Transform>().rotation;
                 RRotate.transform.rotation = RHandRef.GetComponent<Transform>().rotation;
+                ////LCube.transform.position = HBRefHead.transform.position; //player hitboxes
+                ////RCube.transform.position = poseGhost.rightHand.position; //player hitboxes
                 //LRotate.transform.position = LHandRef.GetComponent<Transform>().position + new Vector3(0.0f, 0.2f, 0.0f);
                 //RRotate.transform.position = RHandRef.GetComponent<Transform>().position + new Vector3(0.0f, 0.2f, 0.0f);
                 //LRotateLimit.transform.position = LHandRef.GetComponent<Transform>().position + new Vector3(0.0f, 0.2f, 0.0f);
