@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: MelonInfo(typeof(ClassPH), "PoseHitboxes", "1.3.0", "Marcopolo1613")]
+[assembly: MelonInfo(typeof(ClassPH), "PoseHitboxes", "1.3.1", "Marcopolo1613")]
 [assembly: MelonGame("Buckethead Entertainment", "RUMBLE")]
 
 // General Information about an assembly is controlled through the following
